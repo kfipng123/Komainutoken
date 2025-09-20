@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Komainu Token | 感謝と約束</title>
+  <meta name="description" content="Komainu Token: 感謝と約束のための半クローズページ" />
+  <style>
+    :root{
+      --bg:#0b0b0e;
+      --panel:#111218;
+      --ink:#e9e6dd;
+      --muted:#b9b6ad;
+      --accent:#d9b56d;   /* 金色 */
+      --accent-2:#8a6e2f;
+      --ok:#6dd9a3;
+      --err:#ff6b6b;
+      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      --sans: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji", "Segoe UI Symbol";
+    }
+    html,body{height:100%}
+    body{
+      margin:0;
+      background:
+        radial-gradient(80vw 80vh at 120% -10%, rgba(217,181,109,.08), transparent 60%),
+        radial-gradient(60vw 60vh at -20% 110%, rgba(217,181,109,.06), transparent 60%),
+        var(--bg);
+      color:var(--ink);
+      font-family:var(--sans);
+      letter-spacing:.02em;
+      -webkit-font-smoothing:antialiased;
+      line-height:1.6;
+    }
+    .wrap{
+      max-width:960px;
+      margin:0 auto;
+      padding:24px;
+    }
+    header{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      padding:24px 0 8px;
+      border-bottom:1px solid rgba(217,181,109,.25);
+    }
+    .logo{
+      width:40px;height:40px;border-radius:50%;
+      background: conic-gradient(from 0deg, var(--accent), var(--accent-2), var(--accent));
+      box-shadow:0 0 0 2px rgba(217,181,109,.25) inset, 0 6px 18px rgba(0,0,0,.5);
+    }
+    h1{
+      font-size:24px; margin:0;
+      letter-spacing:.06em; text-transform:uppercase;
+    }
+    .sub{ color:var(--muted); font-size:14px; margin-top:2px}
+    .panel{
+      background:linear-gradient(180deg, rgba(255,255,255,.02), transparent 30%), var(--panel);
+      border:1px solid rgba(217,181,109,.18);
+      border-radius:16px;
+      padding:22px;
+      box-shadow:0 12px 30px rgba(0,0,0,.35), 0 1px 0 rgba(217,181,109,.15) inset;
+      backdrop-filter: blur(6px);
+    }
+    .muted{ color:var(--muted) }
+    .grid{
+      display:grid; gap:16px;
+      grid-template-columns: 1fr;
+    }
+    @media (min-width:860px){
+      .grid{ grid-template-columns: 1.2fr .8fr; }
+    }
+    h2{
+      font-size:18px; margin:0 0 8px;
+      letter-spacing:.06em; text-transform:uppercase;
+      color:var(--accent);
+    }
+    ul{margin:8px 0 0; padding-left:18px}
+    li+li{margin-top:6px}
+    .kbd{
+      font-family:var(--mono);
+      background:#0f1015;
+      border:1px solid rgba(233,230,221,.15);
+      border-bottom-color: rgba(233,230,221,.25);
+      padding:.2em .5em; border-radius:6px;
+    }
+    .btn{
+      appearance:none; border:none; cursor:pointer;
+      padding:10px 14px; border-radius:10px;
+      background:linear-gradient(180deg, rgba(217,181,109,.28), rgba(217,181,109,.18));
+      color:#1b1a16; font-weight:700; letter-spacing:.05em;
+      box-shadow:0 6px 16px rgba(217,181,109,.18), 0 1px 0 rgba(255,255,255,.2) inset;
+    }
+    .btn:active{ transform: translateY(1px) }
+    /* Gate (passphrase) */
+    .gate{
+      position:fixed; inset:0; display:grid; place-items:center;
+      background:
+        radial-gradient(90vw 90vh at 50% -10%, rgba(0,0,0,.4), rgba(0,0,0,.7)),
+        rgba(5,5,8,.8);
+      backdrop-filter: blur(6px);
+      z-index:999;
+    }
+    .gate-card{
+      width:min(92vw, 560px);
+      border-radius:18px; padding:22px;
+    }
+    .gate h3{
+      margin:0 0 6px; font-size:18px; color:var(--accent);
+      letter-spacing:.08em; text-transform:uppercase;
+    }
+    .gate p{ margin:0 0 14px; color:var(--muted)}
+    .field{
+      display:flex; gap:8px; margin-top:8px
+    }
+    input[type=password]{
+      flex:1;
+      background:#0f1015; color:var(--ink);
+      border:1px solid rgba(217,181,109,.25);
+      border-radius:10px; padding:10px 12px; font-family:var(--mono);
+      outline:none;
+    }
+    .hint{ font-size:12px; color:var(--muted); margin-top:8px }
+    .msg{ margin-top:10px; font-size:14px; min-height:1.2em }
+    .msg.ok{ color:var(--ok) }
+    .msg.err{ color:var(--err) }
+    footer{
+      margin:28px 0; color:var(--muted); font-size:12px
+    }
+    .divider{
+      height:1px; background:linear-gradient(90deg, transparent, rgba(217,181,109,.25), transparent);
+      margin:20px 0;
+    }
+    .secret{
+      display:inline-block;
+      font-family:var(--mono); font-size:12px; color:var(--muted);
+      opacity:.55; user-select:none; cursor:help;
+    }
+  </style>
+</head>
+<body>
+  <!-- Gate: 映画っぽい“合言葉”入力。クライアント側のみ（体験重視・堅牢性は目的外） -->
+  <div id="gate" class="gate" aria-modal="true" role="dialog">
+    <div class="panel gate-card">
+      <h3>Enter the Passphrase</h3>
+      <p class="muted">このページは <strong>Komainu Token</strong> を受け取った方のみに開かれます。合言葉をご入力ください。</p>
+      <div class="field">
+        <input id="pw" type="password" inputmode="text" autocomplete="off" spellcheck="false" aria-label="Passphrase" placeholder="例：OXFORD NOT BROGUES" />
+        <button class="btn" id="enterBtn">Unlock</button>
+      </div>
+      <div class="hint">ヒント：メダル裏面の刻印をご確認ください。</div>
+      <div id="gateMsg" class="msg" aria-live="polite"></div>
+    </div>
+  </div>
+
+  <div class="wrap">
+    <header>
+      <div class="logo" aria-hidden="true"></div>
+      <div>
+        <h1>KOMAINU TOKEN</h1>
+        <div class="sub">Gratitude & Oath — 半クローズ専用ページ</div>
+      </div>
+    </header>
+
+    <main class="grid" id="content" style="visibility:hidden">
+      <section class="panel">
+        <h2>感謝のメッセージ</h2>
+        <p>このたびはご親切にしていただき、誠にありがとうございます。<br>
+           私は <strong>Komainu Token</strong> をお渡しすることで、いつかあなたのお役に立つことを約束します。</p>
+        <p class="muted">本ページは、メダルをお持ちの方のみに開かれる“秘密の扉”です。</p>
+
+        <div class="divider"></div>
+
+        <h2>支援できること</h2>
+        <ul>
+          <li>地元エリアの簡単な観光ガイド（来訪時）</li>
+          <li>SNSでの情報発信・軽いPR協力</li>
+          <li>日常のちょっとしたお手伝い（可能な範囲で）</li>
+        </ul>
+
+        <div class="divider"></div>
+
+        <h2>連絡方法</h2>
+        <p>以下の方法でご連絡ください。メダル番号 <span id="tokenId" class="kbd">#000</span> をお知らせいただけると助かります。</p>
+        <ul>
+          <li>メール：<a href="mailto:your.name@example.com">your.name@example.com</a></li>
+          <li>フォーム：<a href="#" target="_blank" rel="noopener">お問い合わせフォーム</a></li>
+          <li>X（旧Twitter）：<a href="#" target="_blank" rel="noopener">@your_handle</a></li>
+        </ul>
+        <p class="muted">※無理のない範囲で、誠意をもって対応いたします。生命や安全に関わる事案には対応できません。</p>
+      </section>
+
+      <aside class="panel">
+        <h2>贈り主</h2>
+        <p><strong>氏名（またはハンドル）</strong><br>
+          ○○大学／研究分野：□□（任意）<br>
+          一言プロフィール：出会いと感謝を大切にしています。</p>
+
+        <div class="divider"></div>
+
+        <h2>メダル情報</h2>
+        <ul>
+          <li>メダル名：Komainu Token</li>
+          <li>発行者：あなたの名前/屋号</li>
+          <li>番号：<span id="tokenId2" class="kbd">#000</span></li>
+          <li>合言葉：<span class="secret" title="ここには表示しません。裏面をご確認ください。">非表示</span></li>
+        </ul>
+
+        <div class="divider"></div>
+
+        <h2>Notes</h2>
+        <p class="muted" style="font-size:13px">
+          このページは“体験価値”を重視した半クローズ仕様です。パスフレーズは簡易的な保護であり、厳密なセキュリティを目的としていません。
+        </p>
+      </aside>
+    </main>
+
+    <footer>
+      © <span id="year"></span> Komainu Token — Gratitude Circulation Medal Platform
+    </footer>
+  </div>
+
+  <script>
+    // ======== 設定（必要に応じて編集してください） ========
+    const PASSPHRASE = "OXFORD NOT BROGUES"; // 合言葉（メダル裏に刻印）
+    const TOKEN_ID   = "KT-030";             // メダル番号（個別印字と対応）
+    // ================================================
+
+    const $ = (sel)=>document.querySelector(sel);
+    const gate = $("#gate");
+    const msg  = $("#gateMsg");
+    const input= $("#pw");
+    const content = $("#content");
+    const tokenIdEls = [$("#tokenId"), $("#tokenId2")];
+
+    // 年・メダル番号の反映
+    $("#year").textContent = new Date().getFullYear();
+    tokenIdEls.forEach(el=> el.textContent = TOKEN_ID);
+
+    // 直近の認証状態（同一セッションで再訪時に自動オープン）
+    const KEY = "komainu_token_unlocked";
+    if (sessionStorage.getItem(KEY) === "1"){
+      reveal();
+    }
+
+    $("#enterBtn").addEventListener("click", tryUnlock);
+    input.addEventListener("keydown", (e)=>{
+      if(e.key === "Enter"){ tryUnlock(); }
+    });
+
+    function tryUnlock(){
+      const val = (input.value || "").trim();
+      if (!val){
+        showErr("合言葉を入力してください。");
+        return;
+      }
+      if (normalize(val) === normalize(PASSPHRASE)){
+        sessionStorage.setItem(KEY,"1");
+        reveal();
+        showOk("Unlocked.");
+        setTimeout(()=> { msg.textContent=""; }, 1200);
+      }else{
+        showErr("合言葉が違います。");
+      }
+    }
+    function reveal(){
+      gate.style.display="none";
+      content.style.visibility="visible";
+    }
+    function normalize(s){
+      return s.toLowerCase().replace(/\s+/g," ").trim();
+    }
+    function showOk(t){
+      msg.className="msg ok"; msg.textContent=t;
+    }
+    function showErr(t){
+      msg.className="msg err"; msg.textContent=t;
+    }
+  </script>
+</body>
+</html>
